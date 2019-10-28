@@ -39,18 +39,16 @@ export default
       @buttonPressed || @myLastStance || @poll.isClosed()
 
     menuActions: ->
-      assign(
-        pick PollService.actions(@poll, @), ['show_history', 'export_poll', 'delete_poll', 'translate_poll']
-      ,
-        pick EventService.actions(@event, @), ['move_event', 'pin_event', 'unpin_event']
-      )
+      poll: ['show_history', 'export_poll', 'delete_poll', 'translate_poll']
+      event: ['move_event', 'pin_event', 'unpin_event']
+
     dockActions: ->
-      pick PollService.actions(@poll, @), ['announce_poll', 'edit_poll', 'close_poll', 'reopen_poll']
+      poll: ['announce_poll', 'edit_poll', 'close_poll', 'reopen_poll']
 
 </script>
 
 <template lang="pug">
-thread-item.poll-created(:event="event")
+thread-item.poll-created(:event="event" :menu-actions="menuActions" :dock-actions="dockActions")
   v-layout(justify-space-between)
     h1.poll-common-card__title.headline
       span(v-if='!poll.translation.title') {{poll.title}}
@@ -67,8 +65,4 @@ thread-item.poll-created(:event="event")
       poll-common-directive(:poll='poll', name='chart-panel')
       poll-common-percent-voted(:poll='poll')
     poll-common-action-panel(:poll='poll')
-  template(v-slot:actions)
-    v-layout.my-2(align-center)
-      action-dock(:actions="dockActions")
-      action-menu(:actions="menuActions")
 </template>

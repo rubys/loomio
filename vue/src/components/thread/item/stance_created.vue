@@ -11,6 +11,8 @@ export default
     event: Object
 
   computed:
+    dockActions: ->
+      ['edit_stance', 'translate_stance', 'show_history']
     eventable: -> @event.model()
     choiceInHeadline: ->
       @eventable.poll().hasOptionIcons() &&
@@ -22,42 +24,10 @@ export default
         'router-link'
       else
         'div'
-
-  created: ->
-    @actions =
-      edit_stance:
-        name: 'poll_common.change_vote'
-        icon: 'mdi-pencil'
-        canPerform: =>
-          @eventable.latest && @eventable.poll().isActive() && @eventable.participant() == Session.user()
-        perform: =>
-          openModal
-            component: 'PollCommonEditVoteModal',
-            props:
-              stance: @eventable.clone()
-
-      translate_stance:
-        icon: 'mdi-translate'
-        canPerform: =>
-          @eventable.reason && AbilityService.canTranslate(@eventable)
-        perform: =>
-          @eventable.translate(Session.user().locale)
-
-      show_history:
-        name: 'action_dock.edited'
-        icon: 'mdi-history'
-        canPerform: => @eventable.edited()
-        perform: =>
-          openModal
-            component: 'RevisionHistoryModal'
-            props:
-              model: @eventable
 </script>
 
 <template lang="pug">
-thread-item.stance-created(:event="event")
-  template(v-slot:actions)
-    action-dock(:model="eventable" :actions="actions")
+thread-item.stance-created(:event="event" :dock-actions="dockActions")
   template(v-if="choiceInHeadline" v-slot:headline)
     component(:is="componentType" :to="event.actor() && urlFor(event.actor())") {{event.actorName()}}
     space

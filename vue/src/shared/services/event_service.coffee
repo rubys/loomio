@@ -3,7 +3,7 @@ import Flash from '@/shared/services/flash'
 import openModal from '@/shared/helpers/open_modal'
 
 export default new class EventService
-  actions: (event, vm) ->
+  actions: (event) ->
     move_event:
       name: 'action_dock.move_items'
       perform: ->

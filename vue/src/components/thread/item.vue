@@ -13,6 +13,8 @@ import RangeSet from '@/shared/services/range_set'
 export default
   props:
     event: Object
+    dockActions: Object
+    menuActions: Object
 
   data: ->
     isDisabled: false
@@ -40,6 +42,7 @@ export default
 
   computed:
     discussion: -> @event.discussion()
+    eventable: -> @event.model()
     iconSize: -> if (@event.depth == 1) then 40 else 32
     isUnread: ->
       (Session.user().id != @event.actorId) && !RangeSet.includesValue(@discussion.readRanges, @event.sequenceId)
@@ -90,9 +93,16 @@ div
             mid-dot
             router-link.grey--text.body-2(:to='link')
               time-ago(:date='event.createdAt')
+
         .default-slot(ref="defaultSlot")
           slot
-        slot(name="actions")
+
+        v-layout(align-center)
+          v-spacer
+          reaction-display(:model="eventable")
+          action-dock(:event='event' :model='eventable' :actions='dockActions')
+          //- action-menu(:event='event' :model="eventable" :actions='menuActions')
+
         event-children(v-if='event.childCount > 0' :discussion='discussion' :parent-event='event' :key="event.id")
   slot(name="append")
 </template>
@@ -109,6 +119,9 @@ div
   transition: border-color 10s;
   border-left: 2px solid #fff;
   padding-left: 14px;
+}
+.thread-item:last-child {
+  margin-bottom: 8px
 }
 
 .thread-item .v-card__actions {

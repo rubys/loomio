@@ -5,7 +5,7 @@ import Records from '@/shared/services/records'
 import openModal from '@/shared/helpers/open_modal'
 
 export default new class CommentService
-  actions: (comment, vm) ->
+  actions: (comment) ->
     notification_history:
       name: 'action_dock.notification_history'
       icon: 'mdi-alarm-check'
@@ -23,13 +23,7 @@ export default new class CommentService
       icon: 'mdi-reply'
       canPerform: -> AbilityService.canRespondToComment(comment)
       perform: ->
-        vm.newComment = Records.comments.build
-          bodyFormat: "html"
-          body: ""
-          discussionId: comment.discussion().id
-          authorId: Session.user().id
-          parentId: comment.id
-        vm.showReplyForm = !vm.showReplyForm
+        comment.showReplyForm = !comment.showReplyForm
 
     edit_comment:
       name: 'common.action.edit'

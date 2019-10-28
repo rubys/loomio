@@ -6,9 +6,10 @@ import AbilityService from '@/shared/services/ability_service'
 import LmoUrlService  from '@/shared/services/lmo_url_service'
 import openModal      from '@/shared/helpers/open_modal'
 import ConfirmModalMixin from '@/mixins/confirm_modal'
+import Vue from 'vue'
 
 export default new class ThreadService
-  actions: (discussion, vm) ->
+  actions: (discussion) ->
     notification_history:
       name: 'action_dock.notification_history'
       icon: 'mdi-alarm-check'
@@ -74,7 +75,7 @@ export default new class ThreadService
     add_comment:
       icon: 'mdi-reply'
       canPerform: -> AbilityService.canAddComment(discussion)
-      perform: -> vm.$vuetify.goTo('#add-comment')
+      perform: -> Vue.$vuetify.goTo('#add-comment')
 
     show_history:
       icon: 'mdi-history'
