@@ -1,0 +1,29 @@
+#!/bin/bash
+set -a
+source loomio-deploy/env
+set +a
+
+export SMTP_SERVER=localhost
+export SMTP_PORT=25
+unset SMTP_USERNAME
+unset SMTP_PASSWORD
+unset SMTP_USE_SSL
+
+export GOOGLE_APP_KEY=key
+export GOOGLE_APP_SECRET=secret
+export APACHE_APP_KEY=key
+export APACHE_APP_SECRET=secret
+
+unset FORCE_SSL
+
+if [ "$EUID" -ne 0 ]; then
+  export GEM_HOME=$HOME/.gem
+  export PATH=$HOME/.gem/bin:$PATH
+  export RAILS_ENV=development
+else
+  export RAILS_ENV=production
+fi
+
+cd loomio
+(cd client; node_modules/.bin/gulp dev&)
+rails server

@@ -1,0 +1,70 @@
+#!/usr/bin/env ruby
+require 'fileutils'
+
+# clean up
+FileUtils.rm_rf 'loomio'
+FileUtils.rm_rf 'loomio-deploy'
+
+# clone repositories
+system 'git', 'clone', 'https://github.com/rubys/loomio.git'
+system 'git', 'clone', 'https://github.com/loomio/loomio-deploy.git'
+
+# install gems locally
+if Process.uid != 0
+  ENV['GEM_HOME'] = File.join(Dir.home, '.gem')
+  ENV['PATH'] = File.join(Dir.home, '.gem/bin') + ':' + ENV['PATH']
+end
+
+Dir.chdir 'loomio' do
+  # switch to apache-oauth enabled branch
+  system 'git checkout apache'
+
+  # substitute our own version of Ruby
+  gemfile = File.read('Gemfile')
+  gemfile[/^\s*ruby\s*['"](.*?)['"]/,1] = RUBY_VERSION if gemfile =~ /^\sruby/
+  File.write('Gemfile', gemfile) unless gemfile == File.read('Gemfile')
+
+  # install new versions of Gems (in particular, bundler)
+  File.delete 'Gemfile.lock'
+
+  # configure the database
+  unless File.exist? 'config/database.yml'
+    FileUtils.cp 'config/database.example.yml', 'config/database.yml'
+  end
+
+  # create a manifest.js
+  FileUtils.mkdir_p 'app/assets/config'
+  unless File.exist? 'app/assets/config/manifest.js'
+    File.write 'app/assets/config/manifest.js', %{
+      //= link_tree ../images
+      //= link_directory ../javascripts .js
+      //= link_directory ../stylesheets .css
+    }.lstrip.gsub(/^\s+/, '')
+  end
+
+  # install gems
+  if Process.uid == 0
+    system 'bundle', 'install', '--system'
+  else
+    system 'bundle', 'install'
+  end
+
+  # install node packages
+  Dir.chdir('vue') { system 'npm', 'install'; system 'npm', 'run', 'build' }
+  Dir.chdir('client') { system 'npm', 'install' }
+
+  # (re-)create database
+  system 'dbdrop', 'loomio_development', '--if-exists'
+  system 'dbcreate', 'loomio_development'
+
+  # setup database
+  system 'rails', 'db:setup'
+
+  # compile scripts, stylesheets, images
+  system 'rails', 'assets:precompile'
+end
+
+# create environment variables
+Dir.chdir 'loomio-deploy' do
+  system 'scripts/create_env', 'debate.apache.org', 'rubys@apache.org'
+end
