@@ -5,6 +5,7 @@ identity:
   - slack
   - microsoft
   - saml
+  - apache
 
 # for providers which provide additional API access
 community:

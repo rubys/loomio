@@ -1,5 +1,5 @@
 //= depend_on "_variables.scss.erb"
-@import 'variables';
+<%= ERB.new(File.read "#{__dir__}/_variables.scss.erb").result(binding) %>
 
 .everything{width: 600px;}
 .icon { width: 50px; vertical-align: top }
